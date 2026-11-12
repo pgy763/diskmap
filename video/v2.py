@@ -215,7 +215,9 @@ def scene_morph(t, lt):
 def scene_contrast(t, lt):
     """Same size, 74x the file count. The clearest possible proof."""
     img = background(W, H)
-    d = ImageDraw.Draw(img)
+    # RGBA: the two cards rise in with 4-tuple fills; plain RGB mode drops the
+    # alpha byte and makes them appear fully formed on the first frame.
+    d = ImageDraw.Draw(img, "RGBA")
     text(d, (M, 220), "两个文件夹，一样大", 38, DIM, weight="bold")
 
     cards = [
@@ -253,7 +255,11 @@ def scene_contrast(t, lt):
 def scene_junk(t, lt):
     """Half of every file on disk is something a build can regenerate."""
     img = background(W, H)
-    d = ImageDraw.Draw(img)
+    # RGBA draw context is required here: every row fades in with a 4-tuple
+    # fill. In plain "RGB" mode PIL silently drops the alpha byte, so the bars
+    # rendered fully opaque and the 6/255 track below came out solid white --
+    # all six rows looked equally full.
+    d = ImageDraw.Draw(img, "RGBA")
     text(d, (M, 216), "还有一件事：文件数的一半是垃圾", 36, DIM, weight="bold")
 
     q = ease_out(norm(lt, 0.1, 0.9))
@@ -291,10 +297,19 @@ def scene_junk(t, lt):
              (DIM[0], DIM[1], DIM[2], int(220 * e)))
         # The bar is scaled by file count on purpose: 4,461 node_modules files
         # must visibly outrank a 108MB jar folder that holds 27 files.
-        bw = (W - 2 * M - 48) * (r["count"] / top)
+        # A faint track behind it is what makes that readable: without the
+        # track a 27-file row is a 6px stub that looks like a rendering bug
+        # rather than "0.6% of the biggest one". Keep the track barely above
+        # the background -- at 14/255 it read as a nearly full white bar and
+        # the rows all looked identical again.
+        track_w = W - 2 * M - 48
+        bw = track_w * (r["count"] / top)
+        d.rounded_rectangle([M + 24, y + 74 + (1 - e) * 18,
+                             M + 24 + track_w, y + 84 + (1 - e) * 18],
+                            radius=5, fill=(255, 255, 255, int(6 * e)))
         d.rounded_rectangle([M + 24, y + 74 + (1 - e) * 18,
                              M + 24 + max(6, bw), y + 84 + (1 - e) * 18],
-                            radius=5, fill=col + (int(110 * e),))
+                            radius=5, fill=col + (int(150 * e),))
 
     q = ease_out(norm(lt, 3.0, 3.9))
     if q > 0:
@@ -307,10 +322,12 @@ def scene_junk(t, lt):
 
 def scene_card(t, lt):
     img = background(W, H)
+    # RGBA for the same reason as the other scenes: the command capsule's
+    # outline and the three feature lines carry an alpha ramp.
     p = ease_out(norm(lt, 0, 0.7))
     glow_text(img, (W / 2 - measure("DiskMap", 104, "bold") / 2, 480 - (1 - p) * 28),
               "DiskMap", 104, (255, 255, 255), "bold")
-    d = ImageDraw.Draw(img)
+    d = ImageDraw.Draw(img, "RGBA")
     text(d, (W / 2, 650), "一把尺子不够，那就两把", 42, ACCENT, weight="bold",
          anchor="ma")
 

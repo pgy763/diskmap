@@ -246,7 +246,9 @@ def _bar_segments(min_pct=1.0):
 def scene_bar(t, lt):
     """One bar, split by top-level folder. The simplest possible mental model."""
     img = background(W, H)
-    d = ImageDraw.Draw(img)
+    # RGBA: the legend rows below fade in via 4-tuple fills, which plain RGB
+    # mode silently drops (alpha byte ignored -> everything appears at once).
+    d = ImageDraw.Draw(img, "RGBA")
 
     head = ease_out(norm(lt, 0, 0.5))
     text(d, (M, 300 - (1 - head) * 20), "C:\\  ·  214.0GB", 40, DIM, weight="bold")
@@ -384,7 +386,10 @@ def _punch(img, blocks, cx, cy, zoom, focus):
 def scene_findings(t, lt):
     """Two numbers that make people open a terminal."""
     img = background(W, H)
-    d = ImageDraw.Draw(img)
+    # RGBA: the two finding cards fade in with 4-tuple fills. In plain RGB mode
+    # PIL drops the alpha byte, so the cards popped in at full opacity instead
+    # of rising out of the background.
+    d = ImageDraw.Draw(img, "RGBA")
     text(d, (M, 250), "扫完之后，还有两件事", 44, DIM, weight="bold")
 
     rows = [
@@ -418,12 +423,12 @@ def scene_findings(t, lt):
 
 def scene_card(t, lt):
     img = background(W, H)
-    d = ImageDraw.Draw(img)
+    d = ImageDraw.Draw(img, "RGBA")
     p = ease_out(norm(lt, 0, 0.7))
 
     glow_text(img, (W / 2 - measure("DiskMap", 108, "bold") / 2, 500 - (1 - p) * 30),
               "DiskMap", 108, (255, 255, 255), "bold")
-    d = ImageDraw.Draw(img)
+    d = ImageDraw.Draw(img, "RGBA")
     text(d, (W / 2, 660), "一个 HTML 文件，离线可看", 42, ACCENT, weight="bold", anchor="ma")
 
     lines = [
