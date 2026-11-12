@@ -21,11 +21,11 @@ python -m diskmap.cli D:/Github-code
 
 DiskMap 用面积说话。一屏之内你就能看出：
 
-- 那块 40% 的紫色是 `algo-stage`，里面全是训练产物
-- 那块 12% 的粉色是 `.tmp-video`，是以前渲染视频留下的
+- 那块 33% 的紫色是 `algo-stage`，里面全是训练产物
+- 那块 9% 的粉色是 `.tmp-video`，是以前渲染视频留下的
 - 三块一样大的 `ProvenanceData` 是**同一个文件的三份副本**
 
-## 三种视图
+## 四种视图
 
 | 视图 | 回答的问题 |
 | --- | --- |
@@ -33,8 +33,14 @@ DiskMap 用面积说话。一屏之内你就能看出：
 | **最大文件** | 具体是哪几个文件？ |
 | **重复文件** | 哪些东西我存了不止一份？ |
 | **一年没动** | 哪些大文件其实早就死了？ |
+| **依赖缓存** | 哪些目录删了能重新构建回来？ |
 
-后三个视图在右侧面板，带搜索框，可以按文件名或扩展名过滤。
+后四个视图在右侧面板，带搜索框，可以按文件名或扩展名过滤。
+
+树图还能换尺子：右上角在「按体积」和「按文件数」之间切换。同一个目录，
+两种量法经常得出完全相反的结论 —— 一个 88 MB 的 `node_modules` 里有 4,461 个
+文件，一个 108 MB 的 `target` 里只有 27 个。按体积看前者不起眼，按文件数看
+它占掉近半个屏幕。详见视频《两把尺子》。
 
 ## 输出
 
@@ -55,8 +61,9 @@ DiskMap 用面积说话。一屏之内你就能看出：
 
 | 目标 | 文件数 | 体积 | 耗时 |
 | --- | --- | --- | --- |
-| `D:\Github-code` | 8,374 | 2.6 GB | 3.4 s |
+| `D:\Github-code` | 22,643 | 3.5 GB | 4.2 s |
 | `C:\Windows\System32` | 25,365 | 11.3 GB | 4.6 s |
+| `C:\` | 764,363 | 214.0 GB | 208.9 s |
 
 重复文件检测用两级哈希：先对前 256 KB 做 `blake2b` 剪枝，只有头部相同才读全文确认。
 所以 800 MB 的重复文件，实际磁盘读取量远小于 800 MB。
@@ -85,13 +92,20 @@ python -m diskmap.cli D:/ --all
 想要一张能直接发出去的图，而不是一个网页：
 
 ```python
-from diskmap.scan import scan, to_json
-from diskmap.render import render_poster
+from diskmap.render import decorate, render_poster
+from diskmap.scan import _human, scan, to_json
 
-root, extra = scan("D:/Github-code")
-render_poster(to_json(root), "poster.png", title="DiskMap",
-              subtitle="2.6GB · 8,374 files", footer="D:/Github-code")
+root, extra = scan("D:/Github-code", progress=False)
+tree = decorate(to_json(root))          # 上色：每个目录预算出主导类型
+render_poster(tree, "poster.png", 2400, 1500,
+              title="DiskMap",
+              subtitle=f"{_human(root.size)}  ·  {extra['stats']['files']:,} files",
+              footer="D:/Github-code")
 ```
+
+`decorate()` 不能省：`to_json()` 只输出名字、体积、子节点，
+每个目录该涂什么颜色是 `render.py` 里按「哪个类型占比 ≥30%」算出来的。
+省掉它整张图会是一片同色。
 
 Pillow 渲染器与网页版的布局代码是**两份独立实现、同一套规则**：
 同样的 squarified 算法、同样的深度明暗表 `[1.00, 0.93, 0.86, 0.80, 0.76, 0.73, 0.71]`、
@@ -101,10 +115,14 @@ Pillow 渲染器与网页版的布局代码是**两份独立实现、同一套�
 
 ```
 diskmap/
-  scan.py      扫描 + 汇总 + 重复检测，约 300 行
+  scan.py      扫描 + 汇总 + 重复检测 + 依赖缓存识别
   report.py    单文件 HTML，布局全部在浏览器 canvas 里做
   render.py    Pillow 渲染器，供海报和视频用
   cli.py       命令行
+video/
+  kit.py       可复用动画工具包（缓动、断行、发光、抖动、编码）
+  v1.py        《C 盘解剖》
+  v2.py        《两把尺子》
 tools/
   check_report.js   不启动浏览器，用 stub DOM 真跑一遍页面脚本并校验几何
   poster.py         一行出图
@@ -114,7 +132,8 @@ tools/
 （Edge 报 `Check failed: . : 拒绝访问 (0x5)`），所以页面脚本是靠一个
 **假 DOM、假 canvas** 在 Node 里真跑一遍验证的：它检查脚本不抛异常、
 所有矩形都在画布内、网格覆盖率 ≥ 88%（证明布局没留缝）、
-点击能下钻且能返回、三个标签页都不为空、搜索框真的会过滤。
+点击能下钻且能返回、四个标签页都不为空、搜索框真的会过滤、
+「按体积 / 按文件数」切换后布局真的变了。
 
 这不是"能跑就行"的烟测，它抓到过三个真 bug：父节点入栈顺序错了导致永远
 只能点最外层、`hitTest` 返回的是 box 却当 node 用、以及斜纹线的端点没裁剪
