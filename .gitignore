@@ -1,0 +1,17 @@
+# 产物目录：报告、海报、帧序列、视频都在这里重新生成，不进仓库
+out/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 视频帧临时目录（kit.Video 在编码时创建）
+.frames-*/
