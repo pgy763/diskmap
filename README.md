@@ -11,6 +11,9 @@ python -m diskmap.cli D:/Github-code
 
 ![DiskMap 海报](docs/poster.png)
 
+不想先跑一遍的话，[`docs/demo.html`](docs/demo.html) 就是这份报告本身 ——
+单文件、双击即开、不联网，可以直接点方块下钻、切「按文件数」看另一面。
+
 ## 它解决什么
 
 "磁盘满了"是个假问题。真实问题是**某个你从没听说过的目录占了一半空间**，
