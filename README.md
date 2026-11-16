@@ -11,8 +11,13 @@ python -m diskmap.cli D:/Github-code
 
 ![DiskMap 海报](docs/poster.png)
 
-不想先跑一遍的话，[`docs/demo.html`](docs/demo.html) 就是这份报告本身 ——
-单文件、双击即开、不联网，可以直接点方块下钻、切「按文件数」看另一面。
+**不想装任何东西，先看效果：**
+
+| | |
+| --- | --- |
+| 🌐 **在线报告** | <https://pgy763.github.io/diskmap/> —— 直接点方块下钻、切「按文件数」，不用下载 |
+| 🎬 **41 秒视频** | [`docs/demo-v1.mp4`](docs/demo-v1.mp4) 《C 盘解剖》：214GB 全盘扫一遍，告诉你去哪了 |
+| 🎬 **37 秒视频** | [`docs/demo-v2.mp4`](docs/demo-v2.mp4) 《两把尺子》：同一个文件夹，换把尺子量是两个世界 |
 
 ## 它解决什么
 
@@ -146,8 +151,8 @@ tools/
 
 | 文件 | 时长 | 讲什么 |
 | --- | --- | --- |
-| `../video-music/out/v1-cdrive-music.mp4` | 41s | 《C 盘解剖》：214GB 全盘扫一遍，直接指出去哪了。764,363 个文件、209 秒、重复文件 12.8GB、一年没动 16.5GB |
-| `../video-music/out/v2-two-rulers-music.mp4` | 37s | 《两把尺子》：同一个文件夹按体积看和按文件数看是两个世界。`.tmp-video` 与 `hello-ai-backend` 体积只差 6%，文件数差 74 倍 |
+| [`docs/demo-v1.mp4`](docs/demo-v1.mp4) | 41s | 《C 盘解剖》：214GB 全盘扫一遍，直接指出去哪了。764,363 个文件、209 秒、重复文件 12.8GB、一年没动 16.5GB |
+| [`docs/demo-v2.mp4`](docs/demo-v2.mp4) | 37s | 《两把尺子》：同一个文件夹按体积看和按文件数看是两个世界。`.tmp-video` 与 `hello-ai-backend` 体积只差 6%，文件数差 74 倍 |
 
 ```bash
 python video/v1.py                    # 编码 v1
